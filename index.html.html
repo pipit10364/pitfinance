@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kantong Kita</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#F5F0E8; --surface:#FFFDF8; --surface2:#EDE8DC;
+  --green:#2A6048; --green-light:#E0EDE7;
+  --gold:#B8862A; --gold-light:#FBF3E0;
+  --red:#C0392B; --red-light:#FDECEA;
+  --blue:#1A5F8A; --blue-light:#E3F0F8;
+  --purple:#6B3FA0; --purple-light:#EDE8F8;
+  --text:#1C1C1C; --text2:#5A5A5A; --text3:#999;
+  --border:rgba(0,0,0,0.09);
+  --radius:16px; --radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.header{background:var(--green);padding:20px 18px 0;color:#fff;}
+.header-sub{font-size:11px;opacity:.6;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;}
+.header-date{font-size:12px;opacity:.55;margin-top:3px;margin-bottom:12px;}
+.nav{background:var(--green);display:flex;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:100;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{color:rgba(255,255,255,.5);background:none;border:none;padding:13px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;}
+.nav-btn.active{color:#fff;border-bottom-color:#F0C040;}
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:13px 13px 0;}
+.sum-card{background:var(--surface);border-radius:var(--radius-sm);padding:10px 12px;border:.5px solid var(--border);}
+.sum-card .lbl{font-size:11px;color:var(--text3);margin-bottom:3px;}
+.sum-card .val{font-size:14px;font-weight:600;}
+.val.g{color:var(--green);} .val.r{color:var(--red);} .val.gold{color:var(--gold);}
+.page{display:none;padding:13px;padding-bottom:44px;}
+.page.active{display:block;}
+.sec-title{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:18px 0 8px;}
+.sec-title:first-child{margin-top:6px;}
+.card{background:var(--surface);border-radius:var(--radius);border:.5px solid var(--border);overflow:hidden;margin-bottom:10px;}
+
+/* ROWS */
+.row-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:.5px solid var(--border);}
+.row-item:last-child{border-bottom:none;}
+.row-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.row-label{flex:1;font-size:14px;}
+.row-sub{font-size:11px;color:var(--text3);}
+.row-right{text-align:right;flex-shrink:0;}
+.edit-input{border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:var(--green);width:76px;text-align:right;cursor:text;outline:none;}
+.edit-input:focus{background:var(--green-light);border-radius:5px;padding:2px 4px;}
+.row-unit{font-size:10px;color:var(--text3);margin-top:1px;}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:.5px solid var(--border);cursor:pointer;user-select:none;transition:background .12s;}
+.check-item:last-child{border-bottom:none;}
+.check-item:active{background:var(--surface2);}
+.check-item.done{opacity:.45;}
+.check-box{width:21px;height:21px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;background:var(--surface);}
+.check-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff;}
+.check-item.done .check-box::after{content:'✓';}
+.check-label{flex:1;font-size:14px;}
+.check-item.done .check-label{text-decoration:line-through;color:var(--text3);}
+.check-amount{font-size:13px;font-weight:600;color:var(--text2);}
+
+/* TOTAL ROW */
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;background:var(--green-light);}
+.total-label{font-size:13px;font-weight:600;color:var(--green);}
+.total-val{font-size:17px;font-weight:600;font-family:'DM Serif Display',serif;color:var(--green);}
+
+/* POCKET */
+.pocket{padding:13px 15px;border-bottom:.5px solid var(--border);}
+.pocket:last-child{border-bottom:none;}
+.pocket-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;gap:10px;}
+.pocket-name{font-size:14px;font-weight:600;}
+.pocket-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.pocket-bar-bg{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+.pocket-bar-fill{height:4px;border-radius:2px;transition:width .5s;}
+.pocket-footer{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--text3);}
+.alloc-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;margin-top:5px;}
+.alloc-jago{background:var(--blue-light);color:var(--blue);}
+.alloc-bibit{background:var(--green-light);color:var(--green);}
+.alloc-emas{background:var(--gold-light);color:var(--gold);}
+.alloc-note{font-size:12px;color:var(--text2);line-height:1.55;margin-top:6px;}
+
+/* ANNUAL */
+.ann-item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:.5px solid var(--border);}
+.ann-item:last-child{border-bottom:none;}
+.ann-month{width:42px;height:42px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;line-height:1.2;}
+
+/* NOTE BOXES */
+.note-box{border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:11px 13px;font-size:13px;line-height:1.6;margin-top:9px;}
+.note-gold{background:var(--gold-light);border-left:3px solid var(--gold);color:#7A5A1A;}
+.note-blue{background:var(--blue-light);border-left:3px solid var(--blue);color:var(--blue);}
+.note-green{background:var(--green-light);border-left:3px solid var(--green);color:var(--green);}
+
+/* SISA CARD */
+.sisa-card{background:var(--surface);border-radius:var(--radius);border:.5px solid var(--border);padding:14px 15px;margin-top:6px;}
+.sisa-lbl{font-size:11px;color:var(--text3);margin-bottom:3px;}
+.sisa-amount{font-size:26px;font-weight:600;font-family:'DM Serif Display',serif;}
+.sisa-sub{font-size:12px;color:var(--text3);margin-top:3px;}
+
+/* SUMMARY PAGE */
+.sum-section{background:var(--surface);border-radius:var(--radius);border:.5px solid var(--border);overflow:hidden;margin-bottom:10px;}
+.sum-row-item{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:.5px solid var(--border);font-size:13px;}
+.sum-row-item:last-child{border-bottom:none;}
+.sum-row-key{color:var(--text2);}
+.sum-row-val{font-weight:600;}
+.sum-highlight{background:var(--green-light);padding:13px 15px;display:flex;justify-content:space-between;align-items:center;}
+.sum-highlight-key{font-size:13px;font-weight:600;color:var(--green);}
+.sum-highlight-val{font-size:20px;font-weight:600;font-family:'DM Serif Display',serif;color:var(--green);}
+.progress-row{padding:11px 15px;border-bottom:.5px solid var(--border);}
+.progress-row:last-child{border-bottom:none;}
+.progress-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+.progress-name{font-weight:500;}
+.progress-pct{color:var(--text3);font-size:12px;}
+
+/* BUTTONS */
+.action-btn{background:none;border:.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text3);cursor:pointer;font-family:inherit;margin-top:9px;display:block;width:100%;text-align:center;}
+.add-btn{background:none;border:.5px solid var(--green);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);cursor:pointer;font-family:inherit;margin-top:9px;display:block;width:100%;text-align:center;font-weight:500;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-sub">Bismillah</div>
+  <h1>Kantong Kita 🌿</h1>
+  <div class="header-date" id="hdr-date"></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('pemasukan')">Pemasukan</button>
+  <button class="nav-btn" onclick="showPage('kantong')">Kantong</button>
+  <button class="nav-btn" onclick="showPage('tagihan')">Tagihan</button>
+  <button class="nav-btn" onclick="showPage('tahunan')">Tahunan</button>
+  <button class="nav-btn" onclick="showPage('summary')">Ringkasan</button>
+</div>
+
+<div class="summary-row">
+  <div class="sum-card"><div class="lbl">Pemasukan</div><div class="val g" id="s-income">—</div></div>
+  <div class="sum-card"><div class="lbl">Keluar est.</div><div class="val" id="s-out">—</div></div>
+  <div class="sum-card"><div class="lbl">Sisa est.</div><div class="val gold" id="s-sisa">—</div></div>
+</div>
+
+<!-- PEMASUKAN -->
+<div class="page active" id="page-pemasukan">
+  <div class="sec-title">Sumber pemasukan — tap angka untuk edit</div>
+  <div class="card" id="income-list"></div>
+  <button class="add-btn" onclick="addIncome()">+ Tambah sumber pemasukan</button>
+  <div class="note-box note-gold" style="margin-top:10px">Angka dalam ribuan rupiah. Side job baru? Tambahkan di sini dan langsung keliatan dampaknya ke sisa budget.</div>
+</div>
+
+<!-- KANTONG -->
+<div class="page" id="page-kantong">
+  <div class="sec-title">Kantong tabungan & alokasi</div>
+  <div class="card" id="kantong-list"></div>
+  <div class="note-box note-blue"><b>Soal alokasi:</b> Kantong Jago Syariah untuk dana yang butuh aman dan dipakai dalam 1–2 tahun. Reksa Dana Pasar Uang Syariah (Bibit) untuk dana jangka panjang supaya tumbuh sambil menunggu.</div>
+  <div class="note-box note-green"><b>Kapan mulai SBN/Sukuk Ritel?</b> Saat tabungan haji sudah ≥ Rp 10 juta, masukkan ke Sukuk Ritel saat jendela dibuka pemerintah (~2–3× per tahun, min. Rp 1 juta). Sambil nunggu, parkir di reksa dana pasar uang syariah.</div>
+  <div class="note-box note-gold">Tap angka hijau untuk edit saldo. Tersimpan otomatis.</div>
+</div>
+
+<!-- TAGIHAN -->
+<div class="page" id="page-tagihan">
+  <div class="sec-title">Tagihan tetap — tap nama untuk lunas, tap angka untuk edit</div>
+  <div class="card" id="tagihan-list"></div>
+
+  <div class="sec-title">Pengeluaran hidup — tap angka untuk edit</div>
+  <div class="card" id="hidup-list"></div>
+  <button class="add-btn" onclick="addHidup()">+ Tambah pengeluaran dadakan</button>
+
+  <div class="sisa-card">
+    <div class="sisa-lbl">Sisa setelah tagihan & kebutuhan hidup</div>
+    <div class="sisa-amount" id="sisa-tagihan">—</div>
+    <div class="sisa-sub" id="sisa-tagihan-sub"></div>
+  </div>
+
+  <button class="action-btn" onclick="resetChecklist()">↺ Reset ceklis — awal bulan baru</button>
+</div>
+
+<!-- TAHUNAN -->
+<div class="page" id="page-tahunan">
+  <div class="sec-title">Pengeluaran tahunan 2026</div>
+  <div class="card" id="tahunan-list"></div>
+  <div class="note-box note-gold">Total 2026: ±Rp 5,2 juta. Buat kantong "Tahunan" terpisah di Jago Syariah — isi rutin tiap bulan ~Rp 434 ribu supaya tidak kaget.</div>
+</div>
+
+<!-- RINGKASAN -->
+<div class="page" id="page-summary">
+  <div class="sec-title">Ringkasan bulanan</div>
+  <div class="sum-section" id="sum-monthly"></div>
+
+  <div class="sec-title">Progress kantong tabungan</div>
+  <div class="sum-section" id="sum-progress"></div>
+
+  <div class="sec-title">Ringkasan tahunan 2026</div>
+  <div class="sum-section" id="sum-yearly"></div>
+</div>
+
+<script>
+const TAGIHAN_DEFAULT = [
+  {id:'air',label:'Air',amount:100000},
+  {id:'listrik',label:'Listrik',amount:300000},
+  {id:'wifi',label:'WiFi / Internet',amount:325000},
+  {id:'keamanan',label:'Keamanan & Sampah',amount:45000},
+  {id:'sedekah',label:'Sedekah',amount:150000},
+];
+const HIDUP_DEFAULT = [
+  {id:'makan',label:'Makan & dapur',amount:1500000},
+  {id:'transport',label:'Transport & bensin',amount:300000},
+  {id:'anak',label:'Kebutuhan anak',amount:400000},
+  {id:'lain',label:'Lain-lain',amount:300000},
+];
+const INCOME_DEFAULT = [
+  {id:'suami',label:'Suami (PPPK)',sub:'Gaji tetap',amount:3800000,dot:'#2A6048'},
+  {id:'pipit',label:'Pipit (Community Manager)',sub:'Gaji tetap',amount:2100000,dot:'#1A5F8A'},
+  {id:'kontrakan',label:'Kontrakan',sub:'Passive income',amount:1500000,dot:'#B8862A'},
+];
+const KANTONG_DATA = [
+  {id:'sd1',label:'SD Kakak (umur 5 th)',sub:'Target Rp 30 jt — earlybird akhir 2026',target:30000000,default_saved:5500000,monthly:3000000,color:'#2A6048',deadline:'Nov 2026',alloc:'jago',alloc_label:'🏦 Kantong Jago Syariah',alloc_note:'Dana ini mau dipakai akhir tahun — simpan aman di Kantong Jago, jangan diinvestasikan.'},
+  {id:'sd2',label:'SD Adik (umur 3 th)',sub:'Target Rp 30 jt — masuk SD 2029',target:30000000,default_saved:0,monthly:300000,color:'#1A5F8A',deadline:'2029',alloc:'jago',alloc_label:'🏦 Kantong Jago Syariah',alloc_note:'Masih 3 tahun lagi. Nabung kecil dari sekarang jauh lebih ringan daripada panik nanti.'},
+  {id:'haji',label:'Dana Haji Berdua',sub:'Target Rp 50 jt → setoran awal ke BSI',target:50000000,default_saved:0,monthly:500000,color:'#B8862A',deadline:'2027–2028',alloc:'bibit',alloc_label:'📈 Reksa Dana Pasar Uang Syariah (Bibit)',alloc_note:'Parkir di RD Pasar Uang Syariah dulu supaya tumbuh. Saat sudah ≥ Rp 10 jt, masukkan ke Sukuk Ritel (SBN) saat jendela dibuka.'},
+  {id:'emas',label:'Emas Rutin',sub:'1 gram/bulan — aktif mulai Des 2026',target:0,default_saved:0,monthly:0,color:'#B8862A',deadline:'Mulai Des 2026',alloc:'emas',alloc_label:'🪙 Emas fisik Antam/UBS atau Pegadaian Syariah',alloc_note:'Kumpul dulu di kantong, beli saat sudah cukup 1 gram (±Rp 2,8 jt). Harga lagi tinggi? Tahan dan beli bulan depan sekaligus 2 gram.'},
+  {id:'darurat',label:'Dana Darurat',sub:'Target Rp 21 jt (3× pengeluaran/bulan)',target:21000000,default_saved:0,monthly:200000,color:'#6B3FA0',deadline:'Bertahap',alloc:'jago',alloc_label:'🏦 Kantong Jago Syariah',alloc_note:'Harus selalu liquid dan aman. Jangan diinvestasikan — ini untuk keadaan darurat.'},
+];
+const TAHUNAN = [
+  {month:'APR',monthNum:4,label:'Pajak Motor',note:'Bulan depan',amount:200000,bg:'#E3F0F8',tc:'#1A5F8A'},
+  {month:'JUN',monthNum:6,label:'Qurban 1 Kambing',note:'Estimasi Idul Adha 2026',amount:2500000,bg:'#E0EDE7',tc:'#2A6048'},
+  {month:'OKT',monthNum:10,label:'Pajak Mobil',note:'Sisihkan dari sekarang',amount:2500000,bg:'#FDECEA',tc:'#C0392B'},
+];
+
+const EXTRA_DOTS=['#6B3FA0','#C0392B','#0D7C66','#8B5523','#1A7FA1'];
+
+function getS(){try{return JSON.parse(localStorage.getItem('kantong_v4')||'{}')}catch{return{}}}
+function setS(d){try{localStorage.setItem('kantong_v4',JSON.stringify(d))}catch{}}
+
+function fmt(n){
+  const abs=Math.abs(n);
+  if(abs>=1000000)return'Rp '+(abs/1000000).toFixed(abs%1000000===0?0:1)+' jt';
+  if(abs>=1000)return'Rp '+Math.round(abs/1000)+'rb';
+  return'Rp '+abs.toLocaleString('id-ID');
+}
+function fmtFull(n){return'Rp '+Math.round(Math.abs(n)).toLocaleString('id-ID')}
+function neg(n){return n<0?'− ':''}
+
+function getTotalIncome(){
+  const s=getS();
+  let t=INCOME_DEFAULT.reduce((a,i)=>a+(s['income_'+i.id]!==undefined?s['income_'+i.id]:i.amount),0);
+  (s.income_extras||[]).forEach(e=>t+=(e.amount||0));
+  return t;
+}
+function getTotalTagihan(){
+  const s=getS();
+  let t=TAGIHAN_DEFAULT.reduce((a,i)=>a+(s['tagihan_'+i.id]!==undefined?s['tagihan_'+i.id]:i.amount),0);
+  (s.tagihan_extras||[]).forEach(e=>t+=(e.amount||0));
+  return t;
+}
+function getTotalHidup(){
+  const s=getS();
+  let t=HIDUP_DEFAULT.reduce((a,h)=>a+(s['hidup_'+h.id]!==undefined?s['hidup_'+h.id]:h.amount),0);
+  (s.hidup_extras||[]).forEach(e=>t+=(e.amount||0));
+  return t;
+}
+function getTotalKantong(){
+  const s=getS();
+  return KANTONG_DATA.reduce((a,k)=>a+(s['monthly_'+k.id]!==undefined?s['monthly_'+k.id]:k.monthly),0);
+}
+function getTotalOut(){return getTotalTagihan()+getTotalHidup()+getTotalKantong();}
+
+function updateSummary(){
+  const income=getTotalIncome(), out=getTotalOut(), sisa=income-out;
+  document.getElementById('s-income').textContent=fmt(income);
+  document.getElementById('s-out').textContent=fmt(out);
+  const el=document.getElementById('s-sisa');
+  el.textContent=neg(sisa)+fmt(sisa);
+  el.className='val '+(sisa>=0?'gold':'r');
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  ['pemasukan','kantong','tagihan','tahunan','summary'].forEach((n,i)=>{
+    if(n===id)document.querySelectorAll('.nav-btn')[i].classList.add('active');
+  });
+  if(id==='summary')renderSummary();
+}
+
+/* ---- PEMASUKAN ---- */
+function renderIncome(){
+  const s=getS();
+  const extras=s.income_extras||[];
+  let html=INCOME_DEFAULT.map(inc=>{
+    const val=s['income_'+inc.id]!==undefined?s['income_'+inc.id]:inc.amount;
+    return`<div class="row-item"><div class="row-dot" style="background:${inc.dot}"></div>
+      <div style="flex:1"><div class="row-label">${inc.label}</div><div class="row-sub">${inc.sub}</div></div>
+      <div class="row-right"><input class="edit-input" type="number" value="${Math.round(val/1000)}" onchange="saveIncome('${inc.id}',this.value)" onclick="event.stopPropagation()"/>
+      <div class="row-unit">ribu/bln</div></div></div>`;
+  }).join('');
+  html+=extras.map((e,i)=>{
+    return`<div class="row-item"><div class="row-dot" style="background:${EXTRA_DOTS[i%EXTRA_DOTS.length]}"></div>
+      <div style="flex:1"><input style="border:none;background:transparent;font-family:inherit;font-size:14px;color:var(--text);width:100%;outline:none" value="${e.label}" onchange="saveIncomeExtraLabel(${i},this.value)" placeholder="Nama sumber..."/><div class="row-sub">Tambahan</div></div>
+      <div class="row-right" style="display:flex;align-items:center;gap:6px">
+        <div><input class="edit-input" type="number" value="${Math.round((e.amount||0)/1000)}" onchange="saveIncomeExtraAmount(${i},this.value)"/>
+        <div class="row-unit">ribu/bln</div></div>
+        <button onclick="removeIncomeExtra(${i})" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 2px;line-height:1">×</button>
+      </div></div>`;
+  }).join('');
+  html+=`<div class="total-row"><span class="total-label">Total/bulan</span><span class="total-val">${fmt(getTotalIncome())}</span></div>`;
+  document.getElementById('income-list').innerHTML=html;
+}
+
+function saveIncome(id,v){const s=getS();s['income_'+id]=(parseFloat(v)||0)*1000;setS(s);renderIncome();renderTagihanPage();updateSummary();}
+function saveIncomeExtraLabel(i,v){const s=getS();const e=s.income_extras||[];if(e[i])e[i].label=v;s.income_extras=e;setS(s);}
+function saveIncomeExtraAmount(i,v){const s=getS();const e=s.income_extras||[];if(e[i])e[i].amount=(parseFloat(v)||0)*1000;s.income_extras=e;setS(s);renderIncome();renderTagihanPage();updateSummary();}
+function removeIncomeExtra(i){const s=getS();const e=s.income_extras||[];e.splice(i,1);s.income_extras=e;setS(s);renderIncome();updateSummary();}
+function addIncome(){const s=getS();const e=s.income_extras||[];e.push({label:'Side job / income lain',amount:0});s.income_extras=e;setS(s);renderIncome();}
+
+/* ---- TAGIHAN ---- */
+function renderTagihanPage(){
+  const s=getS();
+  const tagExtras=s.tagihan_extras||[];
+  const hidupExtras=s.hidup_extras||[];
+
+  // tagihan fixed - ceklis + editable amount
+  let th=TAGIHAN_DEFAULT.map(t=>{
+    const done=!!s['check_'+t.id];
+    const val=s['tagihan_'+t.id]!==undefined?s['tagihan_'+t.id]:t.amount;
+    return`<div class="check-item${done?' done':''}">
+      <div class="check-box" onclick="toggleCheck('${t.id}')"></div>
+      <span class="check-label" onclick="toggleCheck('${t.id}')">${t.label}</span>
+      <input class="edit-input" type="number" value="${Math.round(val/1000)}" onchange="saveTagihan('${t.id}',this.value)" onclick="event.stopPropagation()" style="${done?'text-decoration:line-through;color:var(--text3)':''}"/>
+      <span style="font-size:10px;color:var(--text3);margin-left:2px">rb</span>
+    </div>`;
+  }).join('');
+  // tagihan extras (dadakan bisa ditandai lunas juga)
+  th+=tagExtras.map((e,i)=>{
+    const done=!!s['check_extra_t_'+i];
+    return`<div class="check-item${done?' done':''}">
+      <div class="check-box" onclick="toggleCheckExtra('t',${i})"></div>
+      <input style="flex:1;border:none;background:transparent;font-family:inherit;font-size:14px;color:${done?'var(--text3)':'var(--text)'};outline:none;text-decoration:${done?'line-through':'none'}" value="${e.label}" onchange="saveTagihanExtraLabel(${i},this.value)" placeholder="Nama tagihan..."/>
+      <input class="edit-input" type="number" value="${Math.round((e.amount||0)/1000)}" onchange="saveTagihanExtraAmount(${i},this.value)" onclick="event.stopPropagation()"/>
+      <span style="font-size:10px;color:var(--text3);margin-left:2px">rb</span>
+      <button onclick="removeTagihanExtra(${i})" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 0 0 6px;line-height:1">×</button>
+    </div>`;
+  }).join('');
+  document.getElementById('tagihan-list').innerHTML=th;
+
+  // hidup - semua editable + extras
+  let hh=HIDUP_DEFAULT.map(h=>{
+    const val=s['hidup_'+h.id]!==undefined?s['hidup_'+h.id]:h.amount;
+    return`<div class="row-item" style="cursor:default">
+      <div class="row-dot" style="background:var(--blue)"></div>
+      <span class="row-label">${h.label}</span>
+      <input class="edit-input" type="number" value="${Math.round(val/1000)}" onchange="saveHidup('${h.id}',this.value)" onclick="event.stopPropagation()"/>
+      <span style="font-size:10px;color:var(--text3);margin-left:2px">rb</span>
+    </div>`;
+  }).join('');
+  hh+=hidupExtras.map((e,i)=>{
+    return`<div class="row-item" style="cursor:default">
+      <div class="row-dot" style="background:var(--red)"></div>
+      <input style="flex:1;border:none;background:transparent;font-family:inherit;font-size:14px;color:var(--text);outline:none" value="${e.label}" onchange="saveHidupExtraLabel(${i},this.value)" placeholder="Pengeluaran dadakan..."/>
+      <input class="edit-input" type="number" value="${Math.round((e.amount||0)/1000)}" onchange="saveHidupExtraAmount(${i},this.value)" onclick="event.stopPropagation()"/>
+      <span style="font-size:10px;color:var(--text3);margin-left:2px">rb</span>
+      <button onclick="removeHidupExtra(${i})" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 0 0 6px;line-height:1">×</button>
+    </div>`;
+  }).join('');
+  document.getElementById('hidup-list').innerHTML=hh;
+
+  // sisa
+  const income=getTotalIncome(), tagihan=getTotalTagihan(), hidup=getTotalHidup();
+  const sisa=income-tagihan-hidup;
+  const el=document.getElementById('sisa-tagihan');
+  el.textContent=neg(sisa)+fmtFull(sisa);
+  el.className='sisa-amount '+(sisa>=0?'g':'r');
+  document.getElementById('sisa-tagihan-sub').textContent=sisa>=0
+    ?'Tersedia untuk tabungan & kantong'
+    :'⚠ Pengeluaran melebihi pemasukan — cek kembali angkanya';
+}
+
+function toggleCheck(id){const s=getS();s['check_'+id]=!s['check_'+id];setS(s);renderTagihanPage();}
+function toggleCheckExtra(type,i){const s=getS();const k='check_extra_'+type+'_'+i;s[k]=!s[k];setS(s);renderTagihanPage();}
+function saveTagihan(id,v){const s=getS();s['tagihan_'+id]=(parseFloat(v)||0)*1000;setS(s);renderTagihanPage();updateSummary();}
+function saveTagihanExtraLabel(i,v){const s=getS();const e=s.tagihan_extras||[];if(e[i])e[i].label=v;s.tagihan_extras=e;setS(s);}
+function saveTagihanExtraAmount(i,v){const s=getS();const e=s.tagihan_extras||[];if(e[i])e[i].amount=(parseFloat(v)||0)*1000;s.tagihan_extras=e;setS(s);renderTagihanPage();updateSummary();}
+function removeTagihanExtra(i){const s=getS();const e=s.tagihan_extras||[];e.splice(i,1);s.tagihan_extras=e;setS(s);renderTagihanPage();updateSummary();}
+function saveHidup(id,v){const s=getS();s['hidup_'+id]=(parseFloat(v)||0)*1000;setS(s);renderTagihanPage();updateSummary();}
+function saveHidupExtraLabel(i,v){const s=getS();const e=s.hidup_extras||[];if(e[i])e[i].label=v;s.hidup_extras=e;setS(s);}
+function saveHidupExtraAmount(i,v){const s=getS();const e=s.hidup_extras||[];if(e[i])e[i].amount=(parseFloat(v)||0)*1000;s.hidup_extras=e;setS(s);renderTagihanPage();updateSummary();}
+function removeHidupExtra(i){const s=getS();const e=s.hidup_extras||[];e.splice(i,1);s.hidup_extras=e;setS(s);renderTagihanPage();updateSummary();}
+function addHidup(){const s=getS();const e=s.hidup_extras||[];e.push({label:'Pengeluaran dadakan',amount:0});s.hidup_extras=e;setS(s);renderTagihanPage();}
+function resetChecklist(){
+  if(!confirm('Reset semua ceklis tagihan bulan ini? Pengeluaran dadakan juga akan dihapus.'))return;
+  const s=getS();
+  TAGIHAN_DEFAULT.forEach(t=>{delete s['check_'+t.id];});
+  // reset extra checks and extras
+  delete s.tagihan_extras;delete s.hidup_extras;
+  const extras=s.income_extras||[];
+  extras.forEach((_,i)=>{delete s['check_extra_t_'+i];});
+  setS(s);renderTagihanPage();updateSummary();
+}
+
+/* ---- KANTONG ---- */
+function renderKantong(){
+  const s=getS();
+  document.getElementById('kantong-list').innerHTML=KANTONG_DATA.map(k=>{
+    const saved=s['saved_'+k.id]!==undefined?s['saved_'+k.id]:k.default_saved;
+    const monthly=s['monthly_'+k.id]!==undefined?s['monthly_'+k.id]:k.monthly;
+    const hasT=k.target>0;
+    const pct=hasT?Math.min(100,Math.round(saved/k.target*100)):0;
+    const months=(monthly>0&&hasT)?Math.ceil((k.target-saved)/monthly):null;
+    const aCls=k.alloc==='bibit'?'alloc-bibit':k.alloc==='emas'?'alloc-emas':'alloc-jago';
+    return`<div class="pocket">
+      <div class="pocket-header">
+        <div style="flex:1;min-width:0"><div class="pocket-name">${k.label}</div><div class="pocket-sub">${k.sub}</div><span class="alloc-tag ${aCls}">${k.alloc_label}</span></div>
+        <div style="text-align:right;flex-shrink:0"><input class="edit-input" type="number" value="${Math.round(saved/1000)}" onchange="savePocket('${k.id}',this.value)" title="Edit saldo (ribuan)"/>
+        ${hasT?`<div style="font-size:9px;color:var(--text3);text-align:right">dari ${fmt(k.target)}</div>`:''}</div>
+      </div>
+      ${hasT?`<div class="pocket-bar-bg"><div class="pocket-bar-fill" style="width:${pct}%;background:${k.color}"></div></div>
+      <div class="pocket-footer"><span>${pct}% · target ${k.deadline}</span><span>${monthly>0?'+'+fmt(monthly)+'/bln':'belum aktif'}${months?' · ~'+months+' bln lagi':''}</span></div>`:''}
+      <div class="alloc-note">${k.alloc_note}</div>
+    </div>`;
+  }).join('');
+}
+function savePocket(id,v){const s=getS();s['saved_'+id]=(parseFloat(v)||0)*1000;setS(s);renderKantong();updateSummary();}
+
+/* ---- TAHUNAN ---- */
+function renderTahunan(){
+  const now=new Date();
+  document.getElementById('tahunan-list').innerHTML=TAHUNAN.map(t=>{
+    const past=t.monthNum<now.getMonth()+1;
+    return`<div class="ann-item" style="opacity:${past?'.35':'1'}">
+      <div class="ann-month" style="background:${t.bg};color:${t.tc}"><span>${t.month}</span><span>26</span></div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:500">${t.label}${past?' ✓':''}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${t.note}</div></div>
+      <div style="font-size:14px;font-weight:600;color:${t.tc}">${fmt(t.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---- SUMMARY ---- */
+function renderSummary(){
+  const s=getS();
+  const income=getTotalIncome(), tagihan=getTotalTagihan(), hidup=getTotalHidup(), kantong=getTotalKantong();
+  const out=tagihan+hidup+kantong, sisa=income-out;
+
+  // Monthly
+  document.getElementById('sum-monthly').innerHTML=`
+    <div class="sum-row-item"><span class="sum-row-key">Total pemasukan</span><span class="sum-row-val" style="color:var(--green)">${fmt(income)}</span></div>
+    <div class="sum-row-item"><span class="sum-row-key">Tagihan tetap</span><span class="sum-row-val">− ${fmt(tagihan)}</span></div>
+    <div class="sum-row-item"><span class="sum-row-key">Kebutuhan hidup</span><span class="sum-row-val">− ${fmt(hidup)}</span></div>
+    <div class="sum-row-item"><span class="sum-row-key">Tabungan (semua kantong)</span><span class="sum-row-val">− ${fmt(kantong)}</span></div>
+    <div class="sum-highlight"><span class="sum-highlight-key">Sisa / bulan</span><span class="sum-highlight-val" style="color:${sisa>=0?'var(--green)':'var(--red)'}">${neg(sisa)+fmt(sisa)}</span></div>`;
+
+  // Progress
+  document.getElementById('sum-progress').innerHTML=KANTONG_DATA.filter(k=>k.target>0).map(k=>{
+    const saved=s['saved_'+k.id]!==undefined?s['saved_'+k.id]:k.default_saved;
+    const monthly=s['monthly_'+k.id]!==undefined?s['monthly_'+k.id]:k.monthly;
+    const pct=Math.min(100,Math.round(saved/k.target*100));
+    const months=monthly>0?Math.ceil((k.target-saved)/monthly):null;
+    return`<div class="progress-row">
+      <div class="progress-top"><span class="progress-name">${k.label}</span><span class="progress-pct">${fmt(saved)} / ${fmt(k.target)}</span></div>
+      <div class="pocket-bar-bg"><div class="pocket-bar-fill" style="width:${pct}%;background:${k.color}"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;display:flex;justify-content:space-between">
+        <span>${pct}%${pct>=100?' — ✓ Target tercapai!':''}</span>
+        <span>${months?'~'+months+' bln lagi':monthly===0?'Belum aktif':'Selesai!'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Yearly
+  const totalTahunan=TAHUNAN.reduce((a,t)=>a+t.amount,0);
+  const perBulan=Math.round(totalTahunan/12);
+  const yearly=TAHUNAN.map(t=>`<div class="sum-row-item"><span class="sum-row-key">${t.label} (${t.month})</span><span class="sum-row-val">${fmt(t.amount)}</span></div>`).join('');
+  document.getElementById('sum-yearly').innerHTML=yearly+
+    `<div class="sum-row-item" style="background:var(--gold-light)"><span class="sum-row-key" style="color:var(--gold);font-weight:600">Total tahunan 2026</span><span class="sum-row-val" style="color:var(--gold)">${fmt(totalTahunan)}</span></div>
+    <div class="sum-row-item"><span class="sum-row-key" style="color:var(--text3)">Cicilan per bulan</span><span class="sum-row-val" style="color:var(--text3)">~${fmt(perBulan)}/bln</span></div>`;
+}
+
+/* ---- INIT ---- */
+function init(){
+  const d=new Date();
+  const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('hdr-date').textContent=d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
+  renderIncome();renderKantong();renderTagihanPage();renderTahunan();updateSummary();
+}
+init();
+</script>
+</body>
+</html>
